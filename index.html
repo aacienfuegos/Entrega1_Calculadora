@@ -4,19 +4,202 @@
   <title>Calculadora</title>
   <meta charset="utf-8">
   <script type="text/javascript">
-    const vaciar = () => {
+    /*
+    Antes de ejecutar cada funcion se guarda la operacion a la que se ha llamado
+    Esto nos permite conocer en todo momento la operacion que se esta ejecutando
+    Por el momento, estas son las funcionalidades para las q se utiliza esta variable:
+      1. En caso de ser una operacion binaria, poder pasarle a la funcion eq() la operacion deseada
+      2. Comprobar que la entrada es valida para el tipo de operacion. Por ejemplo una entrada en
+          formato CSV solo es valida para las operaciones en formato CSV
+    */
+    let operacion = ""; // Iniciamos la variable global del tipo de operacion deseada
+
+    // Funciones generales
+    //const vaciar = () => {
+    function vaciar() {
       document.getElementById("pantalla").value = "";
     }
-
-    const cuadrado = () => {
+    const rellenar_info = () => {
+      let info_message = document.getElementById("info");
       let num = document.getElementById("pantalla");
-      num.value = num.value * num.value;
+      // Actualizamos el mensaje de informacion
+      if(num.value<100){  
+        info_message.innerHTML = "Info: El resultado es menor que 100";
+      } else if(num.value <= 200){
+        info_message.innerHTML = "Info: El resultado está entre 100 y 200";
+      } else {
+        info_message.innerHTML = "Info: El resultado es superior a 200"; 
+      }
     }
+    const validar = () => {
+      let num = document.getElementById("pantalla");
+      let list = num.value.split(",");  // Separamos los numeros en una lista
+
+      let csv_operations = ["sumatorio", "ordenar", "revertir", "quitar"];  // Operaciones con entrada CSV
+      // Comprobamos que para las operaciones que no permiten CSV, solo tenemos un numero
+      if(list.length>1 && !csv_operations.includes(operacion)) {
+        num.value = "Error";
+        return false;
+      }
+
+
+      // Comprobamos cada uno de los supuestos numeros
+      for(let i=0; i<list.length; i++){
+        if(isNaN(list[i])) {
+          // Si no es un numero, tenemos un error
+          num.value = "Error";
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Operaciones unitarias
+    const cuadrado = () => {
+      operacion = "cuadrado"; // Tipo de operacion
+      if(!validar()) return;
+      let num = document.getElementById("pantalla");
+      num.value = num.value * num.value;  // Elevamos al cuadrado
+      rellenar_info();
+    }
+    const mod = () => {
+      operacion = "mod"; // Tipo de operacion
+      if(!validar()) return;
+      let num = document.getElementById("pantalla");
+
+      if(num.value < 0) num.value *= -1;  // Cogemos el negativo si el numero es menor que 0
+      rellenar_info();
+    }
+    const fact = () => {
+      operacion = "fact"; // Tipo de operacion
+      if(!validar()) return;
+      let num = document.getElementById("pantalla");
+      // Tratamos el caso 0!=1 por definicion
+      if (num.value==0){
+        num.value = 1;
+        return;
+      }
+      // Calculamos el factorial con un bucle for: x*(x-1)*(x-2)...
+      for(let i=num.value-1; i>1; --i){ // No hace falta llegar a 1 (n*1=n)
+        num.value *= i;
+      }
+
+      rellenar_info();
+    }
+
+    // Operaciones binarias
+    let a = 0;  // Iniciamos la variable global del primer numero 
+    const add = () => {
+      operacion = "add";  // Tipo operacion
+      if(!validar()) return;
+      a = document.getElementById("pantalla").value;  //Guardamos el primer numero introducido
+      vaciar();
+    }
+    const sub = () => {
+      operacion = "sub";  // Tipo operacion
+      if(!validar()) return;
+      a = document.getElementById("pantalla").value;  //Guardamos el primer numero introducido
+      vaciar();
+    }
+    const mul = () => {
+      operacion = "mul";  // Tipo operacion 
+      if(!validar()) return;
+      a = document.getElementById("pantalla").value;  //Guardamos el primer numero introducido
+      vaciar();
+    }
+    const div = () => {
+      operacion = "div";  // Tipo operacion 
+      if(!validar()) return;
+      a = document.getElementById("pantalla").value;  //Guardamos el primer numero introducido
+      vaciar();
+    }
+    const eq = () => {
+      if(!validar()) return;
+      let num = document.getElementById("pantalla");  // Guardamos el segundo numero intoducido
+      // Realizamos la operacion correspondiente
+      switch(operacion){
+        case "add": 
+          num.value = +a + +num.value ; //Suma aritmetica
+          break;
+        case "sub": 
+          num.value = a - num.value;
+          break;
+        case "mul": 
+          num.value = a * num.value;
+          break;
+        case "div": 
+          // Devolvemos un error si el denominador es 0
+          if(num.value==0){ 
+            num.value = "Error";
+            return;
+          }
+          num.value = a / num.value;
+          break;
+      }
+      rellenar_info();
+    }
+
+    // Operaciones en formato CSV
+    const sumatorio = () =>  {
+      operacion = "sumatorio";  // Tipo de operacion
+      if(!validar()) return;
+      let num = document.getElementById("pantalla");
+      let list = num.value.split(",");  // Separamos los numeros
+      
+      let i = 0; let sum = 0;
+      while (i < list.length) sum += +list[i++];  // Sumamos entre si los numeros de la lista
+      num.value = sum;  // Actualizamos el valor de la casilla              
+    }
+    const ordenar = () =>  {
+      operacion = "ordenar";  // Tipo de operacion
+      if(!validar()) return;
+      let num = document.getElementById("pantalla");
+      let list = num.value.split(",");  // Separamos los numeros de la lista
+
+      list.sort((a,b) => a-b);  // Ordenamos la lista por oden numerico
+      num.value = list;
+    }
+    const revertir = () =>  {
+      operacion = "revertir";  // Tipo de operacion
+      if(!validar()) return;
+      let num = document.getElementById("pantalla");
+      let list = num.value.split(",");  // Separamos los numeros de la lista
+      num.value = list.reverse(); // Sacamos por pantalla la lista revertida
+    }
+    const quitar = () =>  {
+      operacion = "quitar";  // Tipo de operacion
+      if(!validar()) return;
+      let num = document.getElementById("pantalla");  
+      let list = num.value.split(",");  // Separamos los numeros de la lista
+      list.pop(); // Eliminamos el ultimo numero de la lista
+      num.value = list;
+    }
+
+
   </script>
 </head>
 <body>
   Número:
   <input type="text" id="pantalla" onclick="vaciar()">
+  <h2 id="info" class="grande" title="Info sobre el número">Info sobre el número</h2>
+  
+  <h3 id="unitarias" title="Operaciones unitarias" >Operaciones unitarias</h3>
   <button id="cuadrado" onclick="cuadrado()">x<sup>2</sup></button>
+  <button id="modulo" onclick="mod()">Mod</button>
+  <button id="factorial" onclick="fact()">n!</button>
+
+  <h3 id="binarias" title="Operaciones binarias" >Operaciones binarias</h3>
+  <button id="suma" onclick="add()">+</button>
+  <button id="resta" onclick="sub()">-</button>
+  <button id="multiplicacion" onclick="mul()">*</button>
+  <button id="division" onclick="div()">/</button>
+  <button id="igual" onclick="eq()">=</button>
+
+  <h3 id="csv" title="Operaciones en formato CSV" >Operaciones en formato CSV</h3>
+  <button id="sumatorio" onclick="sumatorio()">∑x</button>
+  <button id="ordenar" onclick="ordenar()">ordenar</button>
+  <button id="revertir" onclick="revertir()">revertir</button>
+  <button id="quitar" onclick="quitar()">quitar</button>
+
  </body>
 </html>
